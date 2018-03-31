@@ -1,0 +1,23 @@
+{
+  "name": "back-end",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^1.0.3",
+    "fs-extra": "^4.0.2",
+    "kafka-node": "^2.2.3",
+    "mongodb": "^2.2.31",
+    "nodemon": "^1.17.2",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "passport-local-authenticate": "^1.2.0",
+    "server": "^1.0.18",
+    "underscore": "^1.8.3"
+  }
+}

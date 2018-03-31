@@ -1,0 +1,16 @@
+.post-project{
+    margin-top: 7px;
+    background-color: #f77d0e;
+    border:1px solid #f77d0e;
+    color: #fff;
+}
+.post-project:hover{
+    background-color: #f77d0e;
+    border:1px solid #f77d0e;
+    color: #fff;
+}
+.app-header{
+    background-color: white;
+    color: blue;
+    margin-bottom: 0px !important;
+}

@@ -1,0 +1,11 @@
+.main-body{
+    background-image: url('https://freelanceengine.enginethemes.com/wp-content/themes/freelanceengine/img/fre-bg.png');
+    position: relative;
+    height: 675px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: top center;
+}
+.main-content{
+    margin-top: 3%;
+}

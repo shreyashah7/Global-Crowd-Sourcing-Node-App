@@ -1,0 +1,26 @@
+.message-icon{
+    font-size: 20px;
+}
+.pd-0{
+    padding: 0px !important;
+}
+.post-project{
+    margin-top: 7px;
+    background-color: #f77d0e;
+    border:1px solid #f77d0e;
+    color: #fff;
+}
+.post-project:hover{
+    background-color: #f77d0e;
+    border:1px solid #f77d0e;
+    color: #fff;
+}
+.menu-items{
+    display: block !important;
+    padding: 3px 20px !important;
+    clear: both !important;
+    font-weight: 400 !important;
+    line-height: 1.42857143 !important;
+    color: #333 !important;
+    white-space: nowrap !important;
+}
