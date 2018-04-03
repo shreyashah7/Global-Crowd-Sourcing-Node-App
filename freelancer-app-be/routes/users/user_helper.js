@@ -27,7 +27,6 @@ let fetchUser = function (userId) {
                 done(err, {});
             } else {
                 if (results.value === null) {
-                    console.log("inside null");
                     let error = new Error('User not found with this id');
                     error.status = 404;
                     return reject(error);

@@ -14,7 +14,6 @@ let loginRouterFn = function (req, res, next) {
 			let resObj = new resFormat(err);
 			return res.status(resObj.getStatus()).json(resObj.log());
 		}
-		console.log("user :",user);
 		if (!user) {
 			let resObj = new resFormat(info);
 			return res.status(resObj.getStatus()).json(resObj.log());
@@ -64,14 +63,11 @@ let checkUserExist = function (email, password) {
 			if (err) {
 				done(err, {});
 			} else {
-				console.log("results :", results);
 				if (results.value === null) {
-					console.log("inside if---")
 					let error = new Error('No such User Exists! Please try again.');
 					error.status = 404;
 					return reject(error);
 				} else {
-					console.log("inside else----")
 					resolve(results.value);
 				}
 			}

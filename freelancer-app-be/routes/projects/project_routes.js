@@ -14,6 +14,10 @@ let updateProject = require('./update_project');
 let createProject = require('./create_project');
 let deleteProject = require('./delete_project');
 let getProjectDetails = require('./get_project');
+let uploadProjectFiles = require('./upload_project_files');
+let downloadProjectFiles = require('./download_project_files');
+let projectPayment = require('./project_payment');
+let getProjectPayments = require('./get_project_payments');
 let projectHelper = require('./project_helper');
 let auth = require('../../middleware/authentication');
 
@@ -36,6 +40,14 @@ router.put('/project', auth.checkSession, updateProject.updateRouterFn);
 router.post('/project', auth.checkSession, createProject.createRouterFn);
 // To delete project.
 router.delete('/project', auth.checkSession, deleteProject.deleteRouterFn);
+// To upload project files
+router.post('/uploadfile', auth.checkSession, uploadProjectFiles.uploadRouterFn);
+
+router.post('/downloadfile', auth.checkSession, downloadProjectFiles.downloadRouterFn);
+
+router.post('/payment', auth.checkSession, projectPayment.projPaymentRouterFn);
+
+router.post('/payedamount', auth.checkSession, getProjectPayments.projectPaymentInfoRouterFn);
 
 function attachProjectDetails(req, res, next, projectId) {
     req.projectId = projectId;
