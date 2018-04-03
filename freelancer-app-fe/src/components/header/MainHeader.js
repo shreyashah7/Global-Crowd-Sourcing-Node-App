@@ -154,11 +154,9 @@ class MainHeader extends Component {
                                             aria-haspopup="true"
                                             aria-expanded="false">$0.00 USD<span className="caret"></span></a>
                                         <ul className="dropdown-menu">
-                                            <li><a href="">Financial Dashboard</a></li>
                                             <li><a href="">Transaction History</a></li>
-                                            <li><a href="">Verify Payment Method</a></li>
+                                            <li><a href="">Add Money</a></li>
                                             <li><a href="">Withdraw Money</a></li>
-                                            <li><a href="">Redeem Coupon</a></li>
                                         </ul>
                                     </li>
                                     <li><a href=""><i className="fas fa-comment message-icon"></i></a></li>

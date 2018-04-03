@@ -21,7 +21,7 @@ class PostProject extends Component {
             jobRate: '',
             skills: '',
             submitted: false,
-            skillList:[]
+            skillList: []
         };
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -43,7 +43,7 @@ class PostProject extends Component {
         e.preventDefault();
         this.setState({ submitted: true });
         const { projectName, description, skills, jobRate } = this.state;
-       
+
         if (projectName && description && skills && jobRate) {
             let projectObject = this.state;
             projectObject.employer = UserHelper.getUserObject()._id;
@@ -137,7 +137,7 @@ class PostProject extends Component {
                                 Freelancers will use these skills to find projects they are most interested and experienced in.
                         </p>
                             <div className={(this.state.submitted && !this.state.skills ? ' has-error' : '')}>
-                               <Typeahead
+                                <Typeahead
                                     multiple
                                     onChange={(selected) => {
                                         this.setState({

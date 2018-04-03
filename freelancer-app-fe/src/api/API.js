@@ -106,6 +106,22 @@ export const postProject = (projectData) =>
     }).catch(error => {
         return error;
     });
+
+export const getTotalAmt = (projectData) =>
+    fetch(`${api}/payedamount`, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(projectData)
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+
 export const hireFreelancer = (projectData) =>
     fetch(`${api}/project`, {
         method: 'PUT',
@@ -155,6 +171,50 @@ export const getOpenProjects = () =>
             'Content-Type': 'application/json'
         },
         credentials: 'include',
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+
+export const uploadProjectFiles = (formData) =>
+    fetch(`${api}/uploadfile`, {
+        method: 'POST',
+        headers: {
+            ...headers
+        },
+        credentials: 'include',
+        body: formData
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+
+export const downloadProjectFiles = (fileName) =>
+    fetch(`${api}/downloadfile`, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(fileName)
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+
+export const savePaymentDetails = (paymentObj) =>
+    fetch(`${api}/payment`, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(paymentObj)
     }).then(res => {
         return successHandler(res);
     }).catch(error => {

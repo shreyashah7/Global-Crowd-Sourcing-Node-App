@@ -7,6 +7,9 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import userImage from '../user/user.png' // relative path to image
 import { Link } from 'react-router-dom';
+var fileDownload = require('react-file-download');
+var valid = require('card-validator');
+
 
 class ViewProject extends Component {
 
@@ -22,10 +25,23 @@ class ViewProject extends Component {
             bidLimit: 0,
             submitted: false,
             bidList: [],
-            user: UserHelper.getUserObject()
+            user: UserHelper.getUserObject(),
+            uploadedFiles: [],
+            fileNames: [],
+            creditCardNumber: '',
+            expiration: '',
+            cardCvv: '',
+            payingAmount: '',
+            cardSubmitted: false,
+            invalidCreditCardNumber: false,
+            invalidExpiration: false,
+            invalidCardCvv: false,
+            invalidAmount: false,
+            totalAmount: 0
         };
 
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleCardDetails = this.handleCardDetails.bind(this);
     }
 
     componentDidMount() {
@@ -38,7 +54,8 @@ class ViewProject extends Component {
                 .then((resultData) => {
                     if (!!resultData.data) {
                         this.setState({
-                            project: resultData.data
+                            project: resultData.data,
+                            fileNames: resultData.data.files
                         });
                     } else {
                         console.log("No project of that ID");
@@ -54,6 +71,8 @@ class ViewProject extends Component {
                                 console.log("No Bids for that project");
                             }
                         });
+                }).then(() => {
+                    this.getTotalAmountFromDb(this.state.project._id);
                 });
         }
     }
@@ -82,16 +101,143 @@ class ViewProject extends Component {
         }
     }
 
+    handleCardDetails(e) {
+        e.preventDefault();
+        this.setState({
+            cardSubmitted: true
+        });
+        if (!this.validateCardNumber()) {
+            this.setState({
+                invalidCreditCardNumber: true
+            });
+        } else {
+            this.setState({
+                invalidCreditCardNumber: false
+            })
+        }
+        if (!this.validateExpiration()) {
+            this.setState({
+                invalidExpiration: true
+            });
+        } else {
+            this.setState({
+                invalidExpiration: false
+            })
+        }
+        if (!this.validateCardCvv()) {
+            this.setState({
+                invalidCardCvv: true
+            });
+        } else {
+            this.setState({
+                invalidCardCvv: false
+            });
+        }
+        if (!this.validateAmount()) {
+            this.setState({
+                invalidAmount: true
+            });
+        } else {
+            this.setState({
+                invalidAmount: false
+            });
+        }
+        if (this.validateAmount() && this.validateCardCvv() && this.validateCardNumber() && this.validateExpiration()) {
+            let projectObj = {};
+            projectObj.projectId = this.state.project._id;
+            projectObj.senderId = this.state.user._id;
+            projectObj.receiverId = this.state.project.freelancer;
+            projectObj.amount = this.state.payingAmount;
+            let status = this.state.project.status;
+            API.savePaymentDetails(projectObj)
+                .then((resultData) => {
+                    if (resultData.data !== undefined && resultData.data !== null) {
+                        this.notify(resultData.meta.message);
+                    } else {
+                        this.notify(resultData.message);
+                    }
+                    if ((this.state.project.jobRate - (this.state.totalAmount + parseInt(this.state.payingAmount))) === 0) {
+                        let updateObj = {};
+                        updateObj = this.state.project;
+                        updateObj.status = "CLOSED";
+                        API.hireFreelancer(updateObj)
+                            .then((resultData) => {
+                                if (resultData.data !== undefined && resultData.data !== null) {
+                                    this.setState({
+                                        project: updateObj
+                                    });
+                                    this.notify("Project is closed now!");
+                                } else {
+                                    this.notify(resultData.message);
+                                }
+                            }).catch(error => {
+                                this.notify(error);
+                            });
+                        status = "CLOSED";
+                    }
+                }).catch(error => {
+                    this.notify(error);
+                });
+        }
+    }
+
+    getTotalAmountFromDb = function (projectId) {
+        API.getTotalAmt({ projectId: projectId })
+            .then((resultData) => {
+                if (resultData.data !== undefined && resultData.data !== null) {
+                    this.setState({
+                        totalAmount: resultData.data.totalAmount
+                    });
+                } else {
+                    this.notify(resultData.message);
+                }
+            }).catch(error => {
+                this.notify(error);
+            });
+    }
+
+    validateAmount() {
+        return this.state.payingAmount <= (this.state.project.jobRate - this.state.totalAmount);
+    }
+
+    validateCardNumber() {
+        if (!!this.state.creditCardNumber) {
+            return valid.number(this.state.creditCardNumber).isValid;
+        } else {
+            return false;
+        }
+    }
+
+    validateExpiration() {
+        if (!!this.state.expiration) {
+            var expirationObj = valid.expirationDate(this.state.expiration);
+            return valid.expirationMonth(expirationObj.month).isValid && valid.expirationYear(expirationObj.year).isValid;
+        } else {
+            return false;
+        }
+    }
+
+    validateCardCvv() {
+        if (!!this.state.cardCvv) {
+            return valid.cvv(this.state.cardCvv).isValid;
+        } else {
+            return false;
+        }
+    }
+
     hireFreelancer(userId) {
         let hireObj = {};
+        hireObj = this.state.project;
         hireObj._id = this.state.project._id;
-        hireObj.status = "CLOSED";
+        hireObj.projectName = this.state.project.projectName;
+        hireObj.status = "ASSIGNED";
         hireObj.freelancer = userId;
         API.hireFreelancer(hireObj)
             .then((resultData) => {
                 if (resultData.data !== undefined && resultData.data !== null) {
-                    this.state.project.status = resultData.data.status;
-                    this.state.project.freelancer = resultData.data.freelancer;
+                    this.setState({
+                        project: hireObj
+                    });
                     this.notify(resultData.meta.message);
                 } else {
                     this.notify(resultData.message);
@@ -101,7 +247,48 @@ class ViewProject extends Component {
             });
     }
 
+    uploadFiles(e) {
+        e.preventDefault();
+        this.setState({
+            uploadedFiles: this.refs['uploadFile'].files
+        })
+        const data = new FormData();
+        data.append('projectId', this.state.project._id);
+        data.append('projectFile', this.refs['uploadFile'].files[0]);
+        API.uploadProjectFiles(data)
+            .then((resultData) => {
+                let tempArr = this.state.fileNames;
+                tempArr.push(resultData.data);
+                this.setState({
+                    fileNames: tempArr
+                })
+                this.notify(resultData.meta.message);
+            }).catch(error => {
+                this.notify(error);
+            });
+    }
+
+    downloadProjectFiles = function (projectFileName) {
+        API.downloadProjectFiles({ filename: projectFileName })
+            .then((resultData) => {
+                fileDownload(resultData.data, projectFileName.split('@-@')[1]);
+            }).catch(error => {
+                this.notify(error);
+            });
+    }
+
     render() {
+        const fileCols = [{
+            Header: 'Submitted Documents',
+            accessor: 'name',
+            Cell: props => (<div>
+                <a onClick={() => {
+                    this.downloadProjectFiles(props.row._original)
+                }}>
+                    <span>{props.row._original.split('@-@')[1]}</span>
+                </a>
+            </div>)
+        }]
         const columns = [{
             Header: 'FREELANCERS BIDDING',
             accessor: 'userName',
@@ -133,7 +320,7 @@ class ViewProject extends Component {
                 <span>{'$' + props.row._original.bidRate + '/' + UserHelper.getJobType(props.row._original.bidType)}</span>
             </div>)
         }]
-        if (this.state.user.role == 1 && this.state.project.status == 'OPEN') {
+        if (this.state.user.role === 1 && this.state.project.status === 'OPEN') {
             let hireObj = {
                 Header: 'HIRE FREELANCER',
                 style: { 'textAlign': 'right' },
@@ -148,8 +335,7 @@ class ViewProject extends Component {
                 </div>)
             }
             columns.push(hireObj);
-        } else if (this.state.project.status === 'CLOSED') {
-            console.log("inside if",this.state.project.freelancer)
+        } else if (this.state.project.status === 'ASSIGNED') {
             let hireObj = {
                 Header: 'HIRE FREELANCER',
                 style: { 'textAlign': 'right' },
@@ -266,7 +452,8 @@ class ViewProject extends Component {
                         </div>
                         <div className="well white-color">
                             <h4><b>{this.state.project.project_name}</b>
-                                {this.state.user.role === 2 && this.state.project.status !== 'CLOSED' &&
+                                {this.state.user.role === 2 && (this.state.project.status !== 'CLOSED'
+                                    || this.state.project.status !== 'ASSIGNED') &&
                                     <button className="btn btn-info btn-md bid-project-btn pull-right"
                                         type="button" data-toggle="collapse" data-target="#collapseExample"
                                         aria-expanded="false" aria-controls="collapseExample">
@@ -292,6 +479,182 @@ class ViewProject extends Component {
                                 columns={columns} />
                         </div>
                     </form>
+                    {this.state.project.status === 'ASSIGNED' &&
+                        <div>
+                            <div className="well white-color">
+                                <h4 className="mr-t-0"><b>Submission Panel</b></h4>
+                                <form ref='uploadForm'
+                                    id='uploadForm'
+                                    encType="multipart/form-data">
+                                    <fieldset>
+                                        <div className="row">
+                                            <div className="col-md-7">
+                                                <form className="form-inline">
+                                                    <input type="file" multiple
+                                                        className="form-control" name="sampleFile"
+                                                        ref='uploadFile' />&nbsp;&nbsp;&nbsp;
+                                                <button type='button'
+                                                        className="btn btn-default post-project mrt0 mr-left-10"
+                                                        onClick={(e) => this.uploadFiles(e)}>Submit</button>
+                                                </form>
+                                            </div>
+                                            <br /><br />
+                                            <div id="files" className="col-md-12 files">
+                                                {!!this.state.fileNames && this.state.fileNames.length > 0 &&
+                                                    < ReactTable
+                                                        minRows={0}
+                                                        showPagination={false}
+                                                        data={this.state.fileNames}
+                                                        columns={fileCols} />
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                            <div className="well white-color " >
+                                {this.state.user.role === 1 &&
+                                    <button className="btn btn-info btn-md bid-project-btn"
+                                        type="button" data-toggle="collapse" data-target="#paymentBox"
+                                        aria-expanded="false" aria-controls="paymentBox">
+                                        Make Payment
+                                            </button>
+                                }
+                                <div className="mr-t-10 card card-body collapse clearfix" id="paymentBox">
+
+                                    <div className="panel panel-default credit-card-box">
+                                        <div className="panel-heading display-table" >
+                                            <div className="row display-tr" >
+                                                <h3 className="panel-title display-td" >Payment Details</h3>
+                                                <div className="display-td" >
+                                                    <img alt="Card Not Availbale" className="img-responsive pull-right"
+                                                        src="http://i76.imgup.net/accepted_c22e0.png" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="panel-body">
+                                            <form role="form" id="payment-form" method="POST" action="javascript:void(0);">
+                                                <div className="row">
+                                                    <div className="col-xs-12">
+                                                        <div className="form-group">
+                                                            <label htmlFor="cardNumber">CARD NUMBER</label>
+                                                            <div className={(this.state.cardSubmitted && (!this.state.creditCardNumber || this.state.invalidCreditCardNumber) ? ' has-error' : '')}>
+                                                                <div className="input-group">
+                                                                    <input
+                                                                        type="tel"
+                                                                        className="form-control"
+                                                                        name="cardNumber"
+                                                                        placeholder="Valid Card Number"
+                                                                        autoComplete="cc-number"
+                                                                        required autoFocus
+                                                                        value={this.state.creditCardNumber}
+                                                                        onChange={(event) => {
+                                                                            this.setState({ creditCardNumber: event.target.value })
+                                                                        }}
+                                                                    />
+                                                                    <span className="input-group-addon">
+                                                                        <i className="fa fa-credit-card"></i>
+                                                                    </span>
+                                                                </div>
+                                                                {this.state.cardSubmitted && (!this.state.creditCardNumber || this.state.invalidCreditCardNumber) &&
+                                                                    <div className="help-block">Credit Card Number is invalid</div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col-xs-7 col-md-7">
+                                                        <div className="form-group">
+                                                            <label htmlFor="cardExpiry">
+                                                                <span className="hidden-xs">EXPIRATION</span>
+                                                                <span className="visible-xs-inline">EXP</span> DATE</label>
+                                                            <div className={(this.state.cardSubmitted && (!this.state.expiration || this.state.invalidExpiration) ? ' has-error' : '')}>
+                                                                <input
+                                                                    type="tel"
+                                                                    className="form-control"
+                                                                    name="cardExpiry"
+                                                                    placeholder="MM / YY"
+                                                                    autoComplete="cc-exp"
+                                                                    required
+                                                                    value={this.state.expiration}
+                                                                    onChange={(event) => {
+                                                                        this.setState({ expiration: event.target.value })
+                                                                    }}
+                                                                />
+                                                                {this.state.cardSubmitted && (!this.state.expiration || this.state.invalidExpiration) &&
+                                                                    <div className="help-block">Card Expiration is invalid</div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-xs-5 col-md-5 pull-right">
+                                                        <div className="form-group">
+                                                            <label htmlFor="cardCVC">CV CODE</label>
+                                                            <div className={(this.state.cardSubmitted && (!this.state.cardCvv || this.state.invalidCardCvv) ? ' has-error' : '')}>
+                                                                <input
+                                                                    type="tel"
+                                                                    className="form-control"
+                                                                    name="cardCVC"
+                                                                    placeholder="CVC"
+                                                                    autoComplete="cc-csc"
+                                                                    required
+                                                                    value={this.state.cardCvv}
+                                                                    onChange={(event) => {
+                                                                        this.setState({ cardCvv: event.target.value })
+                                                                    }}
+                                                                />
+                                                                {this.state.cardSubmitted && (!this.state.cardCvv || this.state.invalidCardCvv) &&
+                                                                    <div className="help-block">Card CVV is invalid</div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col-xs-12">
+                                                        <div className="form-group">
+                                                            <label htmlFor="cardNumber">Paying Amount</label>
+                                                            <div className={(this.state.cardSubmitted && (!this.state.payingAmount || this.state.invalidAmount) ? ' has-error' : '')}>
+                                                                <div className="input-group">
+                                                                    <input
+                                                                        type="number"
+                                                                        className="form-control"
+                                                                        name="payingAmt"
+                                                                        placeholder="Deposit Amount"
+                                                                        required autoFocus
+                                                                        value={this.state.payingAmount}
+                                                                        onChange={(event) => {
+                                                                            this.setState({ payingAmount: event.target.value })
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                {this.state.cardSubmitted && (!this.state.payingAmount || this.state.invalidAmount) &&
+                                                                    <div className="help-block">Amount is invalid</div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col-xs-12">
+                                                        <button className="subscribe btn btn-success btn-lg btn-block"
+                                                            type="button" onClick={(e) => this.handleCardDetails(e)}>Pay Now</button>
+                                                    </div>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col-xs-12">
+                                                        <p className="payment-errors"></p>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         )
