@@ -1,6 +1,7 @@
 var mongo = require('./mongo');
 var ObjectId = require('mongodb').ObjectID;
 var auth = require('passport-local-authenticate');
+var _ = require('lodash');
 const url = 'mongodb://admin:admin@ds121189.mlab.com:21189/freelancerdb';
 
 function handle_request(msg, callback) {
@@ -26,7 +27,7 @@ function handle_request(msg, callback) {
 			});
 		});
 	} else if (msg.key == "login") {
-		console.log("----login------------")
+		console.log("--------login -----------------");
 		var res = {};
 		var data = {};
 		mongo.connect(url, function (db) {
@@ -43,10 +44,60 @@ function handle_request(msg, callback) {
 						_id: result[0]._id,
 						phoneNumber: result[0].phoneNumber,
 						aboutMe: result[0].aboutMe,
-						avatar: result[0].avatar
+						avatar: result[0].avatar,
+						totalMoney: 0
 					};
-					res.value = data;
-					callback(null, res);
+					if (!!data._id) {
+						db.collection('paymentInfo').aggregate([
+							{
+								$match:
+									{
+										'receiverId': data._id
+									}
+							},
+							{
+								$group: {
+									"_id": "$receiverId",
+									"creditSum": {
+										"$sum": {
+											"$cond": [
+												{ "$eq": ["$type", "CREDIT"] },
+												"$amount",
+												0
+											]
+										}
+									},
+									"debitSum": {
+										"$sum": {
+											"$cond": [
+												{ "$eq": ["$type", "DEBIT"] },
+												"$amount",
+												0
+											]
+										}
+									}
+								}
+							},
+							{
+								$project: {
+									receiverId: 1,
+									"totalPayment": { $subtract: ["$creditSum", "$debitSum"] }
+								}
+							}
+						]).toArray(function (err, rows) {
+							if (!!rows && rows.length > 0) {
+								data.totalMoney = parseFloat(rows[0].totalPayment.toFixed(2));
+								res.value = data;
+								callback(null, res);
+							} else {
+								res.value = data;
+								callback(null, res);
+							}
+						})
+					} else {
+						res.value = data;
+						callback(null, res);
+					}
 				} else {
 					data = null;
 					res.value = data;
@@ -680,7 +731,8 @@ function handle_request(msg, callback) {
 					projectId: ObjectId(msg.value.projectId),
 					senderId: ObjectId(msg.value.senderId),
 					receiverId: ObjectId(msg.value.receiverId),
-					amount: parseInt(msg.value.amount),
+					amount: Number(msg.value.amount),
+					type: msg.value.type,
 					createdAt: new Date()
 				},
 				function (err, rows) {
@@ -709,6 +761,104 @@ function handle_request(msg, callback) {
 
 					callback(null, res);
 				});
+		});
+	} else if (msg.key == "getTransactionCount") {
+		console.log("--------getTransactionCount -----------------");
+		var res = {};
+		mongo.connect(url, function (db) {
+			db.collection("paymentInfo").find({ receiverId: ObjectId(msg.value.userId) })
+				.toArray(function (err, rows) {
+					if (err) throw err;
+					var data = [];
+					if (!!rows && rows.length > 0) {
+						for (let i = 0; i < rows.length; i++) {
+							paymentObj = {
+								senderId: rows[i].senderId,
+								receiverId: rows[i].receiverId,
+								projectId: rows[i].projectId,
+								amount: rows[i].amount,
+								createdAt: rows[i].createdAt,
+								type: rows[i].type
+							};
+							data.push(paymentObj);
+						}
+						res.value = data;
+						callback(null, res);
+					} else {
+						res.value = null;
+						callback(null, res);
+					}
+				})
+		})
+	} else if (msg.key == "getTransactionDetailsByUser") {
+		console.log("--------getTransactionDetailsByUser -----------------");
+		var res = {};
+		mongo.connect(url, function (db) {
+			db.collection("paymentInfo").find({ $or: [{ senderId: ObjectId(msg.value.userId) }, { receiverId: ObjectId(msg.value.userId) }] })
+				.toArray(function (err, rows) {
+					if (err) throw err;
+					if (!!rows && rows.length > 0) {
+						let senderIdList, receiverIdList = [];
+						senderIdList = rows.map(function (item) { return item.senderId; });
+						receiverIdList = rows.map(function (item) { return item.receiverId });
+						projectIdList = rows.map(function (item) { return item.projectId });
+						var finalIdList = _.union(senderIdList, receiverIdList);
+						var data = [];
+						if (!!finalIdList && finalIdList.length > 0) {
+							db.collection("users").find({ _id: { $in: finalIdList } })
+								.toArray(function (err, innerRows) {
+									if (!!innerRows && innerRows.length > 0) {
+										let mapObj = {};
+										for (let i = 0; i < innerRows.length; i++) {
+											if (!mapObj.hasOwnProperty(innerRows[i]._id)) {
+												mapObj[innerRows[i]._id] = innerRows[i].firstName + " " + innerRows[i].lastName;
+											}
+										}
+										for (let i = 0; i < rows.length; i++) {
+											paymentObj = {
+												senderId: rows[i].senderId,
+												receiverId: rows[i].receiverId,
+												projectId: rows[i].projectId,
+												amount: rows[i].amount,
+												createdAt: rows[i].createdAt,
+												type: rows[i].type,
+												senderName: mapObj[rows[i].senderId],
+												receiverName: mapObj[rows[i].receiverId]
+											};
+											data.push(paymentObj);
+										}
+										let projectMapObj = {};
+										db.collection("projects").find({ _id: { $in: projectIdList } })
+											.toArray(function (err, projectRows) {
+												if (!!projectRows && projectRows.length > 0) {
+													for (let i = 0; i < projectRows.length; i++) {
+														if (!projectMapObj.hasOwnProperty(projectRows[i]._id)) {
+															projectMapObj[ObjectId(projectRows[i]._id)] = projectRows[i].projectName;
+														}
+													}
+													for (let i = 0; i < data.length; i++) {
+														data[i].projectName = projectMapObj[data[i].projectId.toString()]
+													}
+													res.value = data;
+													callback(null, res);
+												} else {
+													res.value = data;
+													callback(null, res);
+												}
+											});
+									} else {
+										res.value = null;
+										callback(null, res);
+									}
+								})
+						} else {
+							res.value = null;
+							callback(null, res);
+						}
+					}
+
+				});
+
 		});
 	}
 }

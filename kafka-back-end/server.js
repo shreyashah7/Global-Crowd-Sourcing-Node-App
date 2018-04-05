@@ -1,6 +1,6 @@
 var connection = new require('./kafka/Connection');
 var api = require('./services/api');
-var topic_name = 'request_topic';
+var topic_name = 'fl_request_topic';
 var consumer = connection.getConsumer(topic_name);
 var producer = connection.getProducer();
 
