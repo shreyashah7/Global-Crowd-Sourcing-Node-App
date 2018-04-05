@@ -8,8 +8,6 @@ import 'react-table/react-table.css';
 import userImage from '../user/user.png' // relative path to image
 import { Link } from 'react-router-dom';
 var fileDownload = require('react-file-download');
-var valid = require('card-validator');
-
 
 class ViewProject extends Component {
 
@@ -106,7 +104,7 @@ class ViewProject extends Component {
         this.setState({
             cardSubmitted: true
         });
-        if (!this.validateCardNumber()) {
+        if (!UserHelper.validateCardNumber(this.state.creditCardNumber)) {
             this.setState({
                 invalidCreditCardNumber: true
             });
@@ -115,7 +113,7 @@ class ViewProject extends Component {
                 invalidCreditCardNumber: false
             })
         }
-        if (!this.validateExpiration()) {
+        if (!UserHelper.validateExpiration(this.state.expiration)) {
             this.setState({
                 invalidExpiration: true
             });
@@ -124,7 +122,7 @@ class ViewProject extends Component {
                 invalidExpiration: false
             })
         }
-        if (!this.validateCardCvv()) {
+        if (!UserHelper.validateCardCvv(this.state.cardCvv)) {
             this.setState({
                 invalidCardCvv: true
             });
@@ -142,13 +140,13 @@ class ViewProject extends Component {
                 invalidAmount: false
             });
         }
-        if (this.validateAmount() && this.validateCardCvv() && this.validateCardNumber() && this.validateExpiration()) {
+        if (this.validateAmount() && UserHelper.validateCardCvv(this.state.cardCvv) && UserHelper.validateCardNumber(this.state.creditCardNumber) && UserHelper.validateExpiration(this.state.expiration)) {
             let projectObj = {};
             projectObj.projectId = this.state.project._id;
             projectObj.senderId = this.state.user._id;
             projectObj.receiverId = this.state.project.freelancer;
             projectObj.amount = this.state.payingAmount;
-            let status = this.state.project.status;
+            projectObj.type = 'CREDIT';
             API.savePaymentDetails(projectObj)
                 .then((resultData) => {
                     if (resultData.data !== undefined && resultData.data !== null) {
@@ -156,7 +154,20 @@ class ViewProject extends Component {
                     } else {
                         this.notify(resultData.message);
                     }
-                    if ((this.state.project.jobRate - (this.state.totalAmount + parseInt(this.state.payingAmount))) === 0) {
+                    projectObj.senderId = this.state.user._id;
+                    projectObj.receiverId = this.state.user._id;
+                    projectObj.amount = this.state.payingAmount;
+                    projectObj.type = 'DEBIT';
+                    API.savePaymentDetails(projectObj)
+                        .then((resultData) => {
+                            let userObj = this.state.user;
+                            userObj.totalMoney = Number(userObj.totalMoney) - Number(this.state.payingAmount);
+                            this.setState({
+                                user: userObj
+                            })
+                            UserHelper.setUserObject(userObj);
+                        });
+                    if ((this.state.project.jobRate - (this.state.totalAmount + Number(this.state.payingAmount))) === 0) {
                         let updateObj = {};
                         updateObj = this.state.project;
                         updateObj.status = "CLOSED";
@@ -173,7 +184,6 @@ class ViewProject extends Component {
                             }).catch(error => {
                                 this.notify(error);
                             });
-                        status = "CLOSED";
                     }
                 }).catch(error => {
                     this.notify(error);
@@ -198,31 +208,6 @@ class ViewProject extends Component {
 
     validateAmount() {
         return this.state.payingAmount <= (this.state.project.jobRate - this.state.totalAmount);
-    }
-
-    validateCardNumber() {
-        if (!!this.state.creditCardNumber) {
-            return valid.number(this.state.creditCardNumber).isValid;
-        } else {
-            return false;
-        }
-    }
-
-    validateExpiration() {
-        if (!!this.state.expiration) {
-            var expirationObj = valid.expirationDate(this.state.expiration);
-            return valid.expirationMonth(expirationObj.month).isValid && valid.expirationYear(expirationObj.year).isValid;
-        } else {
-            return false;
-        }
-    }
-
-    validateCardCvv() {
-        if (!!this.state.cardCvv) {
-            return valid.cvv(this.state.cardCvv).isValid;
-        } else {
-            return false;
-        }
     }
 
     hireFreelancer(userId) {

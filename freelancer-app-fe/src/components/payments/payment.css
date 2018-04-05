@@ -1,0 +1,30 @@
+.payment-logo{
+    height: 75px !important;
+    width: 200px !important;
+  }
+.pd-left-0{
+      padding-left: 0px !important;
+}
+.pd-t-10{
+      padding-top: 10px;
+}
+.pd-t-20{
+    padding-top: 20px;
+}
+.border-top{
+    border-top: 1px solid #DEDEDE;
+}
+.withdrawal-input{
+    font-size: 16px !important;
+    height: 40px !important;
+    padding: 0 16px !important;
+}
+.fs-16{
+    font-size: 18px;
+}
+.receive-para{
+    text-align: center;
+}
+.input-grp{
+    width: 50px;
+}

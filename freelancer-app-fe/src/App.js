@@ -9,6 +9,9 @@ import ViewProject from './components/projects/Viewproject';
 import ListProject from './components/projects/Listprojects';
 import SearchProjects from './components/projects/Searchprojects';
 import ViewUserProfile from './components/user/Userprofile';
+import AddMoney from './components/payments/AddMoney';
+import TransactionHistory from './components/payments/TransactionHistory';
+import WithdrawMoney from './components/payments/WithdrawMoney';
 import * as UserHelper from './components/_helper/helper';
 import MainHeader from './components/header/MainHeader';
 
@@ -96,6 +99,36 @@ class App extends Component {
               <div>
                 <MainHeader />
                 <ViewUserProfile {...props} />
+              </div>
+            ) : (
+                <Redirect to="/" component={Landing} />
+              )
+          )} />
+          <Route path="/addmoney" render={(props) => (
+            UserHelper.getLoggedInStatus() ? (
+              <div>
+                <MainHeader />
+                <AddMoney {...props} />
+              </div>
+            ) : (
+                <Redirect to="/" component={Landing} />
+              )
+          )} />
+          <Route path="/transactionhistory" render={(props) => (
+            UserHelper.getLoggedInStatus() ? (
+              <div>
+                <MainHeader />
+                <TransactionHistory {...props} />
+              </div>
+            ) : (
+                <Redirect to="/" component={Landing} />
+              )
+          )} />
+          <Route path="/withdrawmoney" render={(props) => (
+            UserHelper.getLoggedInStatus() ? (
+              <div>
+                <MainHeader />
+                <WithdrawMoney {...props} />
               </div>
             ) : (
                 <Redirect to="/" component={Landing} />

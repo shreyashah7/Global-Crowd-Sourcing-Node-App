@@ -163,6 +163,21 @@ export const getSkills = () =>
         return error;
     });
 
+export const getTransactionHistory = (data) =>
+    fetch(`${api}/transactionhistory`, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+
 export const getOpenProjects = () =>
     fetch(`${api}/projects`, {
         method: 'GET',
@@ -208,6 +223,35 @@ export const downloadProjectFiles = (fileName) =>
 
 export const savePaymentDetails = (paymentObj) =>
     fetch(`${api}/payment`, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(paymentObj)
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+export const withdrawMoney = (paymentObj) =>
+    fetch(`${api}/withdraw`, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(paymentObj)
+    }).then(res => {
+        return successHandler(res);
+    }).catch(error => {
+        return error;
+    });
+
+export const getTransactionCount = (paymentObj) =>
+    fetch(`${api}/transactioncount`, {
         method: 'POST',
         headers: {
             ...headers,

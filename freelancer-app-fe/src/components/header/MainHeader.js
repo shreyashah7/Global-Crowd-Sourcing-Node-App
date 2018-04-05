@@ -152,11 +152,26 @@ class MainHeader extends Component {
                                             data-toggle="dropdown"
                                             role="button"
                                             aria-haspopup="true"
-                                            aria-expanded="false">$0.00 USD<span className="caret"></span></a>
+                                            aria-expanded="false">${!!this.state.user.totalMoney && this.state.user.totalMoney != 0 ? (this.state.user.totalMoney).toFixed(2) : 0.00} USD<span className="caret"></span></a>
                                         <ul className="dropdown-menu">
-                                            <li><a href="">Transaction History</a></li>
-                                            <li><a href="">Add Money</a></li>
-                                            <li><a href="">Withdraw Money</a></li>
+                                            <Link to="/transactionhistory">
+                                                <button
+                                                    className="btn-link menu-items"
+                                                    type="button">Transaction History
+                                                </button>
+                                            </Link>
+                                            <Link to="/addmoney">
+                                                <button
+                                                    className="btn-link menu-items"
+                                                    type="button">Add Money
+                                                </button>
+                                            </Link>
+                                            <Link to="/withdrawmoney">
+                                                <button
+                                                    className="btn-link menu-items"
+                                                    type="button">Withdraw Money
+                                                </button>
+                                            </Link>
                                         </ul>
                                     </li>
                                     <li><a href=""><i className="fas fa-comment message-icon"></i></a></li>
