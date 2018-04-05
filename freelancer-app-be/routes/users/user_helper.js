@@ -22,7 +22,7 @@ let getUserById = function (userId) {
 
 let fetchUser = function (userId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getUserById", { userId: userId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getUserById", { userId: userId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

@@ -23,7 +23,7 @@ let projectPaymentInfoRouterFn = function (req, res, next) {
 
 let getProjectPaymentInfo = function (projectId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getTotalPayedAmtByProject", { projectId: projectId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getTotalPayedAmtByProject", { projectId: projectId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

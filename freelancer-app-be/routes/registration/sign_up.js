@@ -41,7 +41,7 @@ let checkPasswordPattern = function (container) {
 
 let checkUserExist = function (container) {
 	return new Promise(function (resolve, reject) {
-		kafka.make_request('request_topic', "getUserByEmail", { email: container.payload.email }, function (err, results) {
+		kafka.make_request('fl_request_topic', "getUserByEmail", { email: container.payload.email }, function (err, results) {
 			if (err) {
 				done(err, {});
 			} else {
@@ -59,7 +59,7 @@ let checkUserExist = function (container) {
 
 let saveUserInDb = function (container) {
 	return new Promise(function (resolve, reject) {
-		kafka.make_request('request_topic', "register",
+		kafka.make_request('fl_request_topic', "register",
 			{
 				email: container.payload.email,
 				password: container.payload.password,

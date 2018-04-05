@@ -29,7 +29,7 @@ let createRouterFn = function (req, res, next) {
 
 let createProject = function (project) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "postProject",
+        kafka.make_request('fl_request_topic', "postProject",
             {
                 projectName: project.projectName,
                 description: project.description,

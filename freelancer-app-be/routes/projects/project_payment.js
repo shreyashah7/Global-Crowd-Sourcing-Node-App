@@ -4,34 +4,28 @@ let resFormat = require("../../helpers/res_format");
 var kafka = require('../../kafka/client');
 
 let projPaymentRouterFn = function (req, res, next) {
-    if (!!req.body.projectId) {
-        projPayment(req.body)
-            .then(function (updatedProject) {
-                let resObj = new resFormat(updatedProject)
-                    .customMeta({
-                        message: "Payment done successfully."
-                    });
-                return res.status(resObj.getStatus()).json(resObj.log());
-            })
-            .catch(function (error) {
-                let resObj = new resFormat(error);
-                return res.status(resObj.getStatus()).json(resObj.log());
-            });
-    } else {
-        let resObj = new resFormat().customMeta({
-            message: "No Project Available."
+    projPayment(req.body)
+        .then(function (updatedProject) {
+            let resObj = new resFormat(updatedProject)
+                .customMeta({
+                    message: "Payment done successfully."
+                });
+            return res.status(resObj.getStatus()).json(resObj.log());
+        })
+        .catch(function (error) {
+            let resObj = new resFormat(error);
+            return res.status(resObj.getStatus()).json(resObj.log());
         });
-        return res.status(resObj.getStatus()).json(resObj.log());
-    }
 };
 
 let projPayment = function (project) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "projPayment", {
+        kafka.make_request('fl_request_topic', "projPayment", {
             projectId: project.projectId,
             senderId: project.senderId,
             receiverId: project.receiverId,
-            amount: project.amount
+            amount: project.amount,
+            type: project.type
         }, function (err, results) {
             if (err) {
                 done(err, {});
@@ -50,7 +44,7 @@ let projPayment = function (project) {
 
 let getFreelancerDetails = function (freelancerId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getUserById", { userId: freelancerId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getUserById", { userId: freelancerId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

@@ -29,7 +29,7 @@ let updateRouterFn = function (req, res, next) {
 
 let updateUser = function (userObj) {
 	return new Promise(function (resolve, reject) {
-		kafka.make_request('request_topic', "updateUser",
+		kafka.make_request('fl_request_topic', "updateUser",
 			{
 				_id: userObj._id,
 				firstName: userObj.firstName,

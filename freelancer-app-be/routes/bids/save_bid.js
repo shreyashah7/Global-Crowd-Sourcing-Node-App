@@ -29,7 +29,7 @@ let createRouterFn = function (req, res, next) {
 
 let saveBid = function (bidObj) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "saveBid",
+        kafka.make_request('fl_request_topic', "saveBid",
             {
                 userId: bidObj.userId,
                 projectId: bidObj.projectId,

@@ -8,12 +8,12 @@ var kafka = require('../../kafka/client');
  */
 let routerFn = function (req, res, next) {
 
-	let userId = req.userId;
-	getUserById(userId)
-		.then(function (userModel) {
-			let resObj = new resFormat(userModel)
+	let userId = req.body.userId;
+	getTransactionDetails(userId)
+		.then(function (transactions) {
+			let resObj = new resFormat(transactions)
 				.customMeta({
-					message: 'User retrieved successfully.'
+					message: 'Transactions retrieved successfully.'
 				});
 			return res.status(resObj.getStatus()).json(resObj.log());
 		})
@@ -24,14 +24,14 @@ let routerFn = function (req, res, next) {
 
 };
 
-let getUserById = function (userId) {
+let getTransactionDetails = function (userId) {
 	return new Promise(function (resolve, reject) {
-		kafka.make_request('fl_request_topic', "getUserById", { userId: userId }, function (err, results) {
+		kafka.make_request('fl_request_topic', "getTransactionDetailsByUser", { userId: userId }, function (err, results) {
 			if (err) {
 				done(err, {});
 			} else {
 				if (results.value === null) {
-					let error = new Error('User not found with this id');
+					let error = new Error('Transaction not found with this id');
 					error.status = 404;
 					return reject(error);
 				} else {

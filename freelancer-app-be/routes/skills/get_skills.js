@@ -24,7 +24,7 @@ let skillRouterFn = function (req, res, next) {
 
 let getAllSkills = function () {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getAllSkills", {}, function (err, results) {
+        kafka.make_request('fl_request_topic', "getAllSkills", {}, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

@@ -81,6 +81,7 @@ app.use(require('./routes/registration/registration_routes'));
 app.use(require('./routes/projects/project_routes'));
 app.use(require('./routes/skills/skills_routes'));
 app.use(require('./routes/bids/bid_routes'));
+app.use(require('./routes/payment/payment_routes'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

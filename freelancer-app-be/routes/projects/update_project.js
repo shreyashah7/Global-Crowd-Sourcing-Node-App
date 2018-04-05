@@ -61,7 +61,7 @@ let updateRouterFn = function (req, res, next) {
 
 let updateProject = function (project) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "updateProject", {
+        kafka.make_request('fl_request_topic', "updateProject", {
             _id: project._id,
             status: project.status,
             freelancer: project.freelancer
@@ -83,7 +83,7 @@ let updateProject = function (project) {
 
 let getFreelancerDetails = function (freelancerId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getUserById", { userId: freelancerId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getUserById", { userId: freelancerId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

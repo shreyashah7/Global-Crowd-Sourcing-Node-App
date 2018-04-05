@@ -39,7 +39,7 @@ let uploadRouterFn = function (req, res, next) {
 
 let saveProjectFilePath = function (projectObj) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "saveProjectFiles",
+        kafka.make_request('fl_request_topic', "saveProjectFiles",
             {
                 _id: projectObj.projectId,
                 files: projectObj.filename

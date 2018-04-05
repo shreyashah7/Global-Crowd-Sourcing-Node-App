@@ -23,7 +23,7 @@ let deleteRouterFn = function (req, res, next) {
 
 let deleteUser = function () {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "deleteUser", {}, function (err, results) {
+        kafka.make_request('fl_request_topic', "deleteUser", {}, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

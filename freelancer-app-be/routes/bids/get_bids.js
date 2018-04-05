@@ -8,7 +8,7 @@ let resFormat = require("../../helpers/res_format");
 
 let getAllUserBidsByProject = function (projectId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getAllUserBidsByProject", { projectId: projectId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getAllUserBidsByProject", { projectId: projectId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

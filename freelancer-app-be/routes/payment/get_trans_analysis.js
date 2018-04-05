@@ -1,16 +1,19 @@
 'use strict';
 
 let resFormat = require("../../helpers/res_format");
+
 var kafka = require('../../kafka/client');
 /***
- *  Main function for update project route
+ *  Main function to get user route
  */
-let deleteRouterFn = function (req, res, next) {
-    deleteProject(req.project)
-        .then(function () {
-            let resObj = new resFormat()
+let routerFn = function (req, res, next) {
+
+    let userId = req.body.userId;
+    getTransactionCount(userId)
+        .then(function (transactions) {
+            let resObj = new resFormat(transactions)
                 .customMeta({
-                    message: "Project deleted successfully."
+                    message: 'Transactions retrieved successfully.'
                 });
             return res.status(resObj.getStatus()).json(resObj.log());
         })
@@ -18,16 +21,17 @@ let deleteRouterFn = function (req, res, next) {
             let resObj = new resFormat(error);
             return res.status(resObj.getStatus()).json(resObj.log());
         });
+
 };
 
-let deleteProject = function () {
+let getTransactionCount = function (userId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('fl_request_topic', "deleteProject", { projectId: projectId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getTransactionCount", { userId: userId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {
                 if (results.value === null) {
-                    let error = new Error('Cannot delete Project.');
+                    let error = new Error('Transaction not found with this id');
                     error.status = 404;
                     return reject(error);
                 } else {
@@ -37,5 +41,4 @@ let deleteProject = function () {
         });
     });
 }
-
-module.exports.deleteRouterFn = deleteRouterFn;
+module.exports.routerfn = routerFn;

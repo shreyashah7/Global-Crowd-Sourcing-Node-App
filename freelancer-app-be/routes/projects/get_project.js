@@ -100,7 +100,7 @@ let userProjectRouterFn = function (req, res, next) {
 
 let getProjectDetailsById = function (projectId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getProjectDetailsById", { projectId: projectId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getProjectDetailsById", { projectId: projectId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {
@@ -118,7 +118,7 @@ let getProjectDetailsById = function (projectId) {
 
 let getAllOpenProject = function () {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getAllOpenProjects", {}, function (err, results) {
+        kafka.make_request('fl_request_topic', "getAllOpenProjects", {}, function (err, results) {
             if (err) {
                 done(err, {});
             } else {
@@ -136,7 +136,7 @@ let getAllOpenProject = function () {
 
 let getAllSearchProjects = function (searchStrng) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getAllSearchProjects", { searchStrng: searchStrng }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getAllSearchProjects", { searchStrng: searchStrng }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {
@@ -154,7 +154,7 @@ let getAllSearchProjects = function (searchStrng) {
 
 let getAllSkillProjects = function (skillList) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getAllSkillProjects", { skills: skillList }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getAllSkillProjects", { skills: skillList }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {
@@ -176,7 +176,7 @@ let getAllSkillProjects = function (skillList) {
 
 let getEmployerProjects = function (userId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getEmployerProjects", { userId: userId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getEmployerProjects", { userId: userId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {
@@ -193,7 +193,7 @@ let getEmployerProjects = function (userId) {
 }
 let getFreelancerProjects = function (userId) {
     return new Promise(function (resolve, reject) {
-        kafka.make_request('request_topic', "getFreelancerProjects", { userId: userId }, function (err, results) {
+        kafka.make_request('fl_request_topic', "getFreelancerProjects", { userId: userId }, function (err, results) {
             if (err) {
                 done(err, {});
             } else {

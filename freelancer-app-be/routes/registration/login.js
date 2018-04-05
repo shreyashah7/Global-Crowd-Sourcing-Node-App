@@ -59,7 +59,7 @@ let checkUserExist = function (email, password) {
 			error.status = 500;
 			return reject(error);
 		}
-		kafka.make_request('request_topic', "login", { email: email }, function (err, results) {
+		kafka.make_request('fl_request_topic', "login", { email: email }, function (err, results) {
 			if (err) {
 				done(err, {});
 			} else {
