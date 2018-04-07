@@ -21,15 +21,14 @@ describe("Freelancer Test cases", function () {
                 done();
             });
     });
-
     it('Test case 1 - Sign Up', function (done) {
         agent
             .put('/signup')
             .send({
                 "email": email,
                 "password": "Testing@123",
-                "first_name": "admin",
-                "last_name": "admin",
+                "firstName": "admin",
+                "lastName": "admin",
                 "role": 1
             })
             .expect(200)
@@ -72,7 +71,7 @@ describe("Freelancer Test cases", function () {
             .put('/user/' + userId)
             .send({
                 "id": userId,
-                "first_name": updatedUserName
+                "firstName": updatedUserName
             })
             .expect(200)
             .expect('Content-Type', /json/)
@@ -86,10 +85,10 @@ describe("Freelancer Test cases", function () {
         agent
             .post('/project')
             .send({
-                "project_name": projectName,
+                "projectName": projectName,
                 "description": "I am very good angular developer",
-                "job_type": "HOURLY",
-                "job_rate": "35",
+                "jobType": "HOURLY",
+                "jobRate": "35",
                 "skills": "Mobile App Development,NodeJS",
                 "employer": userId
             })
