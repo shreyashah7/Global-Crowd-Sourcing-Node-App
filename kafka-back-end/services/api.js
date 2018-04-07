@@ -750,7 +750,13 @@ function handle_request(msg, callback) {
 					'projectId': ObjectId(msg.value.projectId)
 				}
 			},
-				{ $group: { _id: null, totalAmount: { $sum: "$amount" } } },
+				{
+					$group:
+						{
+							_id: null,
+							totalAmount: { $sum: "$amount" }
+						}
+				},
 				function (err, rows) {
 					if (err) throw err;
 					if (rows.length == 0) {
