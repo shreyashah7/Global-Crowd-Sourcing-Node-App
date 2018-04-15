@@ -27,13 +27,13 @@ steps to run freelancer application:
 			kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic request_topic
 			kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic response_topic
 		
-	Go to Lab2-shah\freelancer-app\kafka-back-end and execute below commands:
+	Go to Lab2-shah\kafka-back-end and execute below commands:
 		npm install
 		npm start
 
 4. for node backend:- 
 		
-	Go to Lab2-shah\freelancer-app\freelancer-app-be and execute below commands:
+	Go to Lab2-shah\freelancer-app-be and execute below commands:
 		npm install
 		npm start
 	
@@ -42,7 +42,7 @@ steps to run freelancer application:
 	
 5. for frontend:- 
 	
-	Go to Lab2-shah\freelancer-app\freelancer-app-fe and execute below commands:
+	Go to Lab2-shah\freelancer-app-fe and execute below commands:
 		npm install
 		npm start
 	it will open http://localhost:3000/ in chrome
